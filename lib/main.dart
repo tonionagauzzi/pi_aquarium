@@ -29,35 +29,179 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class PiAquarium extends StatelessWidget {
+class PiAquarium extends StatefulWidget {
   const PiAquarium({super.key});
 
   @override
+  State<StatefulWidget> createState() => _PiAquariumState();
+}
+
+class _PiAquariumState extends State<PiAquarium> {
+  int counter = 0;
+
+  void count() {
+    setState(() {
+      counter++;
+    });
+  }
+
+  void reset() {
+    setState(() {
+      counter = 0;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    PiTexts piTexts = PiTexts(counter: counter);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('円周率の水族館'),
+        title: const Text('円周率の水族館'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.play_arrow),
+            icon: const Icon(Icons.play_arrow),
             onPressed: () {
-              //再生ボタンが押されたときの処理
+              count();
             },
           ),
           IconButton(
-            icon: Icon(Icons.stop),
+            icon: const Icon(Icons.stop),
             onPressed: () {
-              //停止ボタンが押されたときの処理
+              reset();
             },
           ),
         ],
       ),
       body: Center(
-        child: Text('Hello World!'),
+        child: piTexts,
       ),
     );
   }
 }
+
+class PiTexts extends StatelessWidget {
+  PiTexts({super.key, required this.counter});
+
+  final String pi = '''3.
+  1415926535 8979323846 2643383279 5028841971 6939937510
+  5820974944 5923078164 0628620899 8628034825 3421170679
+  8214808651 3282306647 0938446095 5058223172 5359408128
+  4811174502 8410270193 8521105559 6446229489 5493038196
+  4428810975 6659334461 2847564823 3786783165 2712019091
+  4564856692 3460348610 4543266482 1339360726 0249141273
+  7245870066 0631558817 4881520920 9628292540 9171536436
+  7892590360 0113305305 4882046652 1384146951 9415116094
+  3305727036 5759591953 0921861173 8193261179 3105118548
+  0744623799 6274956735 1885752724 8912279381 8301194912
+  9833673362 4406566430 8602139494 6395224737 1907021798
+  6094370277 0539217176 2931767523 8467481846 7669405132
+  0005681271 4526356082 7785771342 7577896091 7363717872
+  1468440901 2249534301 4654958537 1050792279 6892589235
+  4201995611 2129021960 8640344181 5981362977 4771309960
+  5187072113 4999999837 2978049951 0597317328 1609631859
+  5024459455 3469083026 4252230825 3344685035 2619311881
+  7101000313 7838752886 5875332083 8142061717 7669147303
+  5982534904 2875546873 1159562863 8823537875 9375195778
+  1857780532 1712268066 1300192787 6611195909 2164201989
+  '''.replaceAll(RegExp(r"\s+"), '');
+  final int counter;
+
+  @override
+  Widget build(BuildContext context) {
+    int lengthShowingPi = 12;
+    int beginPi = counter * lengthShowingPi;
+    int endPi = beginPi + lengthShowingPi;
+    Iterable<StatefulWidget> piTexts =
+        pi.runes.toList().sublist(beginPi, endPi).asMap().entries.map((entry) {
+      int index = entry.key;
+      double moveX = index % 2 != 0 ? 0 : 2 / lengthShowingPi;
+      double beginX = -0.5 + index / lengthShowingPi;
+      double endX = beginX + moveX;
+      double moveY = -1.0 + index * 2 / lengthShowingPi;
+      double beginY = 0.0;
+      double endY = moveY;
+      String piCharacter = String.fromCharCode(entry.value);
+      return MyAnimatedText(
+        text: piCharacter,
+        index: index,
+        beginX: beginX,
+        beginY: beginY,
+        endX: endX,
+        endY: endY,
+      );
+    });
+    return Stack(children: piTexts.toList());
+  }
+}
+
+class MyAnimatedText extends StatefulWidget {
+  const MyAnimatedText({
+    super.key,
+    required this.text,
+    required this.index,
+    required this.beginX,
+    required this.beginY,
+    required this.endX,
+    required this.endY,
+  });
+
+  final String text;
+  final int index;
+  final double beginX;
+  final double beginY;
+  final double endX;
+  final double endY;
+
+  @override
+  _MyAnimatedTextState createState() => _MyAnimatedTextState();
+}
+
+class _MyAnimatedTextState extends State<MyAnimatedText>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    _animation = Tween<Offset>(
+      begin: Offset(widget.beginX, widget.beginY),
+      end: Offset(widget.endX, widget.endY),
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: _animation.value * 250, // テキストの移動距離を設定
+          child: Text(
+            widget.text,
+            style: const TextStyle(fontSize: 32.0),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// 以下。未使用コード
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
