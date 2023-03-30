@@ -24,7 +24,37 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const PiAquarium(),
+    );
+  }
+}
+
+class PiAquarium extends StatelessWidget {
+  const PiAquarium({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('円周率の水族館'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.play_arrow),
+            onPressed: () {
+              //再生ボタンが押されたときの処理
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.stop),
+            onPressed: () {
+              //停止ボタンが押されたときの処理
+            },
+          ),
+        ],
+      ),
+      body: Center(
+        child: Text('Hello World!'),
+      ),
     );
   }
 }
